@@ -39,3 +39,9 @@ Environment variables:
 ## Notes
 - Logging is configured at startup; noisy werkzeug logs are suppressed to WARNING.
 - Error handlers return JSON for 404 and 500.
+
+## Docker
+
+### Build the Image
+```bash
+docker build -t yourusername/devops-info-service:latest .

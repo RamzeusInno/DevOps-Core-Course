@@ -24,3 +24,23 @@ on:
     branches: [ "master" ]
     paths:
       - 'app_python/**'
+
+
+```
+## 2. Workflow Evidence
+
+### GitHub Actions
+🔗 **link:** https://github.com/RamzeusInno/DevOps-Core-Course/actions
+
+![GitHub Actions Success](screenshots/actions.png)
+
+### ✅ Docker Hub
+🔗 **repo:** https://hub.docker.com/r/ramzeus1/devops-info-service
+
+![Docker Hub Tags](screenshots/docker-tags.png)
+
+### ✅ Local tests
+```bash
+pytest -v --cov=app
+# 16 passed, 84% coverage
+```

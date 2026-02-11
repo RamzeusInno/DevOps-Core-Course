@@ -1,5 +1,7 @@
 # DevOps Info Service (Python)
 
+![Python CI](https://github.com/RamzeusInno/DevOps-Core-Course/actions/workflows/python-ci.yml/badge.svg)
+
 ## Overview
 The DevOps Info Service is a production-ready web application that reports detailed information about its runtime environment, system resources, and service status. This service will evolve throughout the DevOps course into a comprehensive monitoring tool.
 
@@ -45,3 +47,15 @@ Environment variables:
 ### Build the Image
 ```bash
 docker build -t yourusername/devops-info-service:latest .
+```
+### Run container
+``` bash
+docker run -d -p 5000:5000 --name devops-app ramzeus1/devops-info-service:latest
+
+# Check logs
+docker logs devops-app
+
+# Stop container
+docker stop devops-app
+docker rm devops-app
+```

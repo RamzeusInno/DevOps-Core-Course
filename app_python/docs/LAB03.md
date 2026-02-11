@@ -10,8 +10,8 @@
 ### Testing Framework
 **Framework:** pytest with pytest-cov  
 **Why:** Simple syntax, powerful fixtures, excellent plugin ecosystem  
-**Tests:** 16 unit tests  
-**Coverage:** 100%
+**Tests:** 17 unit tests  
+**Coverage:** 84%
 
 ### CI Workflow Triggers
 ```yaml

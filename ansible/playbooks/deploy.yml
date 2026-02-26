@@ -1,0 +1,7 @@
+- name: Deploy application
+  hosts: all
+  gather_facts: yes
+  become: yes
+
+  roles:
+    - app_deploy

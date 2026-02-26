@@ -1,0 +1,7 @@
+---
+- hosts: all
+  gather_facts: no
+  tasks:
+    - name: Show all variables for this host
+      debug:
+        var: vars

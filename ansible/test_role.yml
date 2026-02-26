@@ -1,0 +1,9 @@
+---
+- hosts: all
+  gather_facts: yes
+  become: no
+  roles:
+    - role: app_deploy
+      vars:
+        dockerhub_password: "{{ dockerhub_password }}"
+        app_name: "{{ app_name }}"

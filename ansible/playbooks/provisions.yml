@@ -1,7 +1,21 @@
+---
 - name: Provision web servers
   hosts: all
   become: yes
+  gather_facts: yes
 
   roles:
-    - common
-    - docker
+    - role: common
+      tags:
+        - common
+
+    - role: docker
+      tags:
+        - docker
+
+  tasks:
+    - name: Provisioning completed
+      debug:
+        msg: "System provisioning completed successfully"
+      tags:
+        - always

@@ -1,0 +1,94 @@
+---
+# Wipe logic runs first (when explicitly requested)
+- name: Include wipe tasks
+  include_tasks: wipe.yml
+  when: web_app_wipe | bool
+  tags:
+    - web_app_wipe
+
+# Deployment tasks
+- name: Docker Compose Deployment Block
+  block:
+    - name: Create application directory
+      file:
+        path: "{{ compose_project_dir }}"
+        state: directory
+        mode: '0755'
+      become: yes
+
+    - name: Template docker-compose.yml
+      template:
+        src: docker-compose.yml.j2
+        dest: "{{ compose_project_dir }}/docker-compose.yml"
+        mode: '0644'
+      register: compose_file
+      become: yes
+
+    - name: Login to Docker Hub
+      docker_login:
+        username: ramzeus1
+        password: dckr_pat_pC4gjbebQ4Z4PAFVN4VcK8XTsAs
+      no_log: true
+      become: yes
+
+    - name: Pull Docker image
+      docker_image:
+        name: "{{ docker_image }}"
+        tag: "{{ docker_tag }}"
+        source: pull
+        force_source: yes
+      become: yes
+
+    - name: Deploy with Docker Compose
+      community.docker.docker_compose_v2:
+        project_src: "{{ compose_project_dir }}"
+        state: present
+        pull: always
+        recreate: auto
+      register: compose_result
+      become: yes
+
+  rescue:
+    - name: Handle deployment failure
+      debug:
+        msg: "Deployment failed. Check logs in {{ compose_project_dir }}"
+
+  always:
+    - name: Verify deployment
+      debug:
+        msg: "Deployment completed"
+
+  tags:
+    - web_app
+    - web_app_deploy
+    - compose
+
+- name: Health Check Block
+  block:
+    - name: Wait for container to be ready
+      wait_for:
+        port: "{{ app_host_port }}"
+        host: 127.0.0.1
+        delay: "{{ health_check_delay }}"
+        timeout: 60
+
+    - name: Check health endpoint
+      uri:
+        url: "http://127.0.0.1:{{ app_host_port }}/health"
+        method: GET
+        status_code: 200
+      register: health_check
+      until: health_check.status == 200
+      retries: "{{ health_check_retries }}"
+      delay: 2
+
+    - name: Display application info
+      debug:
+        msg:
+          - "Container {{ app_name }} is running"
+          - "Application: http://127.0.0.1:{{ app_host_port }}"
+          - "Health check: {{ health_check.status }}"
+
+  tags:
+    - web_app
+    - health_check

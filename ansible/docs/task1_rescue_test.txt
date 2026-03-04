@@ -1,0 +1,23 @@
+
+PLAY [Provision web servers] ***************************************************
+
+TASK [Gathering Facts] *********************************************************
+ok: [ramzuka]
+
+TASK [docker : Add Docker GPG key] *********************************************
+ok: [ramzuka]
+
+TASK [docker : Add Docker repository] ******************************************
+ok: [ramzuka]
+
+TASK [docker : Verify repository exists] ***************************************
+ok: [ramzuka]
+
+TASK [Provisioning completed] **************************************************
+ok: [ramzuka] => {
+    "msg": "System provisioning completed successfully"
+}
+
+PLAY RECAP *********************************************************************
+ramzuka                    : ok=5    changed=0    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
+

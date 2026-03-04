@@ -1,10 +1,68 @@
 ---
-- name: Update apt cache
-  apt:
-    update_cache: yes
-    cache_valid_time: 3600
+- name: System Update Block
+  block:
+    - name: Update apt cache
+      apt:
+        update_cache: yes
+        cache_valid_time: 3600
+      register: apt_update
 
-- name: Install common packages
-  apt:
-    name: "{{ common_packages }}"
-    state: present
+    - name: Show update status
+      debug:
+        msg: "Apt cache updated successfully"
+      when: apt_update.changed
+
+  rescue:
+    - name: Fix apt if update fails
+      command: apt-get update --fix-missing
+      changed_when: false
+
+    - name: Retry apt update
+      apt:
+        update_cache: yes
+
+  always:
+    - name: Create apt log file
+      file:
+        path: /tmp/ansible_apt.log
+        state: touch
+        mode: '0644'
+      changed_when: false
+
+  become: yes
+  tags:
+    - common
+    - system
+    - apt
+
+- name: Package Installation Block
+  block:
+    - name: Install common packages
+      apt:
+        name: "{{ common_packages }}"
+        state: present
+      register: pkg_install
+
+    - name: Show installation result
+      debug:
+        msg: "{{ pkg_install.results | length if pkg_install.results is defined else 0 }} packages processed"
+
+  rescue:
+    - name: Log package failure
+      debug:
+        msg: "Package installation failed. Check package names."
+
+  always:
+    - name: Create package list file
+      copy:
+        content: |
+          Packages installed at {{ ansible_date_time.iso8601 }}
+          {{ common_packages | join('\n') }}
+        dest: /tmp/installed_packages.txt
+        force: no
+      changed_when: false
+
+  become: yes
+  tags:
+    - common
+    - packages

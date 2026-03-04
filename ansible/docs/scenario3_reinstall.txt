@@ -1,0 +1,104 @@
+
+PLAY [Deploy application] ******************************************************
+
+TASK [Gathering Facts] *********************************************************
+ok: [ramzuka]
+
+TASK [docker : Add Docker GPG key] *********************************************
+ok: [ramzuka]
+
+TASK [docker : Add Docker repository] ******************************************
+ok: [ramzuka]
+
+TASK [docker : Verify repository exists] ***************************************
+ok: [ramzuka]
+
+TASK [docker : Install Docker packages] ****************************************
+ok: [ramzuka]
+
+TASK [docker : Show installation status] ***************************************
+skipping: [ramzuka]
+
+TASK [docker : Ensure Docker is running] ***************************************
+ok: [ramzuka]
+
+TASK [docker : Add user to docker group] ***************************************
+ok: [ramzuka]
+
+TASK [docker : Install Docker Python module] ***********************************
+ok: [ramzuka]
+
+TASK [docker : Verify Docker installation] *************************************
+ok: [ramzuka]
+
+TASK [docker : Show Docker version] ********************************************
+ok: [ramzuka] => {
+    "msg": "Docker version 29.2.1, build a5c7197"
+}
+
+TASK [web_app : Include wipe tasks] ********************************************
+included: /home/ramzuka/devops_lab5/ansible/roles/web_app/tasks/wipe.yml for ramzuka
+
+TASK [web_app : Stop and remove containers with docker-compose] ****************
+changed: [ramzuka]
+
+TASK [web_app : Remove docker-compose.yml file] ********************************
+changed: [ramzuka]
+
+TASK [web_app : Remove application directory] **********************************
+changed: [ramzuka]
+
+TASK [web_app : Log wipe completion] *******************************************
+ok: [ramzuka] => {
+    "msg": [
+        "Application devops-app wiped successfully",
+        "Directory /opt/devops-app removed"
+    ]
+}
+
+TASK [web_app : Verify removal] ************************************************
+ok: [ramzuka]
+
+TASK [web_app : Show verification result] **************************************
+ok: [ramzuka] => {
+    "msg": "Directory successfully removed"
+}
+
+TASK [web_app : Create application directory] **********************************
+changed: [ramzuka]
+
+TASK [web_app : Template docker-compose.yml] ***********************************
+changed: [ramzuka]
+
+TASK [web_app : Login to Docker Hub] *******************************************
+ok: [ramzuka]
+
+TASK [web_app : Pull Docker image] *********************************************
+ok: [ramzuka]
+
+TASK [web_app : Deploy with Docker Compose] ************************************
+changed: [ramzuka]
+
+TASK [web_app : Verify deployment] *********************************************
+ok: [ramzuka] => {
+    "msg": "Deployment completed"
+}
+
+TASK [web_app : Wait for container to be ready] ********************************
+ok: [ramzuka]
+
+TASK [web_app : Check health endpoint] *****************************************
+ok: [ramzuka]
+
+TASK [web_app : Display application info] **************************************
+ok: [ramzuka] => {
+    "msg": [
+        "Container devops-app is running",
+        "Application: http://127.0.0.1:5000",
+        "Health check: 200"
+    ]
+}
+
+PLAY RECAP *********************************************************************
+ramzuka                    : ok=26   changed=6    unreachable=0    failed=0    skipped=1    rescued=0    ignored=0   
+

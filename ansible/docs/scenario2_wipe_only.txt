@@ -1,0 +1,38 @@
+
+PLAY [Deploy application] ******************************************************
+
+TASK [Gathering Facts] *********************************************************
+ok: [ramzuka]
+
+TASK [web_app : Include wipe tasks] ********************************************
+included: /home/ramzuka/devops_lab5/ansible/roles/web_app/tasks/wipe.yml for ramzuka
+
+TASK [web_app : Stop and remove containers with docker-compose] ****************
+fatal: [ramzuka]: FAILED! => {"changed": false, "msg": "\"/opt/devops-app\" is not a directory"}
+...ignoring
+
+TASK [web_app : Remove docker-compose.yml file] ********************************
+ok: [ramzuka]
+
+TASK [web_app : Remove application directory] **********************************
+ok: [ramzuka]
+
+TASK [web_app : Log wipe completion] *******************************************
+ok: [ramzuka] => {
+    "msg": [
+        "Application devops-app wiped successfully",
+        "Directory /opt/devops-app removed"
+    ]
+}
+
+TASK [web_app : Verify removal] ************************************************
+ok: [ramzuka]
+
+TASK [web_app : Show verification result] **************************************
+ok: [ramzuka] => {
+    "msg": "Directory successfully removed"
+}
+
+PLAY RECAP *********************************************************************
+ramzuka                    : ok=8    changed=0    unreachable=0    failed=0    skipped=0    rescued=0    ignored=1   
+

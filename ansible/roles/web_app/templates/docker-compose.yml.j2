@@ -1,0 +1,21 @@
+services:
+  {{ app_name }}:
+    image: {{ docker_image }}:{{ docker_tag }}
+    container_name: {{ app_name }}
+    restart: {{ restart_policy }}
+    ports:
+      - "{{ app_host_port }}:{{ app_container_port }}"
+    environment:
+      - HOST=0.0.0.0
+      - PORT={{ app_container_port }}
+    logging:
+      driver: json-file
+      options:
+        max-size: 10m
+        max-file: "3"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:{{ app_container_port }}/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s

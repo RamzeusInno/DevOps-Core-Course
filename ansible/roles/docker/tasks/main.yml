@@ -1,40 +1,125 @@
 ---
-- name: Add Docker GPG key
-  apt_key:
-    url: https://download.docker.com/linux/ubuntu/gpg
-    state: present
+- name: Docker Repository Setup Block
+  block:
+    - name: Add Docker GPG key
+      apt_key:
+        url: https://download.docker.com/linux/ubuntu/gpg
+        state: present
+      register: gpg_result
+      retries: 3
+      delay: 5
 
-- name: Add Docker repository
-  apt_repository:
-    repo: "deb [arch=amd64] https://download.docker.com/linux/ubuntu {{ ansible_distribution_release }} stable"
-    state: present
+    - name: Add Docker repository
+      apt_repository:
+        repo: "deb [arch=amd64] https://download.docker.com/linux/ubuntu {{ ansible_distribution_release }} stable"
+        state: present
+        update_cache: yes
+      register: repo_result
 
-- name: Install Docker packages
-  apt:
-    name:
-      - docker-ce
-      - docker-ce-cli
-      - containerd.io
-      - docker-buildx-plugin
-      - docker-compose-plugin
-    update_cache: yes
-    state: present
-  notify: restart docker
+  rescue:
+    - name: Alternative GPG key addition
+      shell: |
+        curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
+      when: gpg_result.failed
+      changed_when: false
 
-- name: Ensure Docker is running and enabled
-  service:
-    name: docker
-    state: started
-    enabled: yes
+    - name: Update apt after alternative method
+      apt:
+        update_cache: yes
 
-- name: Add user to docker group
-  user:
-    name: "{{ docker_user }}"
-    groups: docker
-    append: yes
-  notify: restart docker
+  always:
+    - name: Verify repository exists
+      stat:
+        path: /etc/apt/sources.list.d/docker.list
+      register: repo_file
+      changed_when: false
 
-- name: Install python3-docker for Ansible modules
-  apt:
-    name: python3-docker
-    state: present
+  become: yes
+  tags:
+    - docker
+    - docker_repo
+
+- name: Docker Installation Block
+  block:
+    - name: Install Docker packages
+      apt:
+        name:
+          - docker-ce
+          - docker-ce-cli
+          - containerd.io
+          - docker-buildx-plugin
+          - docker-compose-plugin
+        update_cache: yes
+        state: present
+      register: install_result
+      notify: restart docker
+
+    - name: Show installation status
+      debug:
+        msg: "Docker packages installed/updated"
+      when: install_result.changed
+
+  rescue:
+    - name: Handle installation failure
+      debug:
+        msg: "Docker installation failed. Check: systemctl status docker"
+
+  always:
+    - name: Ensure Docker is running
+      service:
+        name: docker
+        state: started
+        enabled: yes
+
+  become: yes
+  tags:
+    - docker
+    - docker_install
+
+- name: Docker Configuration Block
+  block:
+    - name: Add user to docker group
+      user:
+        name: "{{ docker_user }}"
+        groups: docker
+        append: yes
+      register: user_result
+      notify: restart docker
+
+    - name: Install Docker Python module
+      apt:
+        name:
+          - python3-docker
+        state: present
+      register: apt_result
+      become: yes
+
+  rescue:
+    - name: Handle configuration failure
+      debug:
+        msg: "Docker configuration failed but it still may work"
+
+  become: yes
+  tags:
+    - docker
+    - docker_config
+
+- name: Docker Verification Block
+  block:
+    - name: Verify Docker installation
+      command: docker --version
+      register: docker_version
+      changed_when: false
+
+    - name: Show Docker version
+      debug:
+        msg: "{{ docker_version.stdout }}"
+
+  rescue:
+    - name: Verification failed
+      debug:
+        msg: "Docker verification failed"
+
+  tags:
+    - docker
+    - verify

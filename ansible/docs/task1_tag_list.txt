@@ -1,0 +1,5 @@
+
+playbook: playbooks/provisions.yml
+
+  play #1 (all): Provision web servers	TAGS: []
+      TASK TAGS: [always, apt, common, docker, docker_config, docker_install, docker_repo, packages, system, verify]

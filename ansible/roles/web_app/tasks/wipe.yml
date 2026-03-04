@@ -1,0 +1,50 @@
+---
+- name: Wipe Application Block
+  block:
+    - name: Stop and remove containers with docker-compose
+      community.docker.docker_compose_v2:
+        project_src: "{{ compose_project_dir }}"
+        state: absent
+        remove_volumes: yes
+        remove_orphans: yes
+      register: compose_down_result
+      ignore_errors: yes
+      become: yes
+
+    - name: Remove docker-compose.yml file
+      file:
+        path: "{{ compose_project_dir }}/docker-compose.yml"
+        state: absent
+      become: yes
+      ignore_errors: yes
+
+    - name: Remove application directory
+      file:
+        path: "{{ compose_project_dir }}"
+        state: absent
+      become: yes
+      ignore_errors: yes
+
+    - name: Log wipe completion
+      debug:
+        msg:
+          - "Application {{ app_name }} wiped successfully"
+          - "Directory {{ compose_project_dir }} removed"
+
+  rescue:
+    - name: Handle wipe failure
+      debug:
+        msg: "Wipe operation partially failed"
+
+  always:
+    - name: Verify removal
+      stat:
+        path: "{{ compose_project_dir }}"
+      register: dir_check
+
+    - name: Show verification result
+      debug:
+        msg: "Directory {{ 'still exists' if dir_check.stat.exists else 'successfully removed' }}"
+
+  tags:
+    - web_app_wipe

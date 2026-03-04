@@ -1,0 +1,2 @@
+CONTAINER ID   IMAGE                                 COMMAND           CREATED          STATUS                      PORTS                                         NAMES
+4880ba11c904   ramzeus1/devops-info-service:latest   "python app.py"   20 minutes ago   Up 20 minutes (unhealthy)   0.0.0.0:5000->5000/tcp, [::]:5000->5000/tcp   devops-app

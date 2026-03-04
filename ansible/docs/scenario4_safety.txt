@@ -1,0 +1,12 @@
+
+PLAY [Deploy application] ******************************************************
+
+TASK [Gathering Facts] *********************************************************
+ok: [ramzuka]
+
+TASK [web_app : Include wipe tasks] ********************************************
+skipping: [ramzuka]
+
+PLAY RECAP *********************************************************************
+ramzuka                    : ok=1    changed=0    unreachable=0    failed=0    skipped=1    rescued=0    ignored=0   
+

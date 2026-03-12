@@ -1,69 +1,8 @@
-import os
-import socket
-import platform
-import logging
-from datetime import datetime, timezone, timedelta
-from flask import Flask, jsonify, request
-
-# Configuration
-HOST = os.getenv('HOST', '0.0.0.0')
-PORT = int(os.getenv('PORT', '5000'))
-DEBUG = os.getenv('DEBUG', 'False').lower() == 'true'
-
-# Application Setup
-app = Flask(__name__)
-app_start_time = datetime.now(timezone.utc)
-
-# Logging Configuration
-logging.basicConfig(
-    level=logging.DEBUG if DEBUG else logging.INFO,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
-)
-logger = logging.getLogger(__name__)
-
-# Helper Functions
-def get_system_info():
-    """Collect comprehensive system information."""
-    return {
-        'hostname': socket.gethostname(),
-        'platform': platform.system(),
-        'platform_version': platform.version(),
-        'architecture': platform.machine(),
-        'cpu_count': os.cpu_count() or 0,
-        'python_version': platform.python_version()
-    }
-
-def get_uptime():
-    """Calculate application uptime in seconds and human-readable format."""
-    delta = datetime.now(timezone.utc) - app_start_time
-    seconds = int(delta.total_seconds())
-    
-    # Calculate human-readable format
-    days, remainder = divmod(seconds, 86400)
-    hours, remainder = divmod(remainder, 3600)
-    minutes, seconds = divmod(remainder, 60)
-    
-    human_parts = []
-    if days > 0:
-        human_parts.append(f"{days} day{'s' if days != 1 else ''}")
-    if hours > 0:
-        human_parts.append(f"{hours} hour{'s' if hours != 1 else ''}")
-    if minutes > 0:
-        human_parts.append(f"{minutes} minute{'s' if minutes != 1 else ''}")
-    if seconds > 0 or not human_parts:
-        human_parts.append(f"{seconds} second{'s' if seconds != 1 else ''}")
-    
-    return {
-        'seconds': seconds,
-        'human': ', '.join(human_parts)
-    }
-
 # Application Endpoints
 @app.route('/')
 def main_endpoint():
     """Main endpoint returning service and system information."""
-    logger.info(f"Main endpoint accessed by {request.remote_addr}")
-    
+    logger.info('Main endpoint accessed')
     return jsonify({
         'service': {
             'name': 'devops-info-service',
@@ -93,8 +32,7 @@ def main_endpoint():
 @app.route('/health')
 def health_check():
     """Health check endpoint for monitoring and probes."""
-    logger.debug(f"Health check from {request.remote_addr}")
-    
+    logger.debug('Health check performed')
     return jsonify({
         'status': 'healthy',
         'timestamp': datetime.now(timezone.utc).isoformat(),
@@ -104,7 +42,10 @@ def health_check():
 # Error Handlers
 @app.errorhandler(404)
 def not_found(error):
-    logger.warning(f"404 error: {request.path}")
+    logger.warning('404 Not Found', extra={
+        'path': request.path,
+        'method': request.method
+    })
     return jsonify({
         'error': 'Not Found',
         'message': 'The requested endpoint does not exist',
@@ -113,14 +54,20 @@ def not_found(error):
 
 @app.errorhandler(500)
 def internal_error(error):
-    logger.error(f"500 error: {str(error)}")
+    logger.error('500 Internal Server Error', exc_info=True, extra={
+        'path': request.path,
+        'method': request.method
+    })
     return jsonify({
         'error': 'Internal Server Error',
         'message': 'An unexpected error occurred'
     }), 500
 
 # Application Entry Point
-if __name__ == '__main__':
-    logger.info(f"Starting DevOps Info Service on {HOST}:{PORT}")
-    logger.info(f"Debug mode: {DEBUG}")
+if name == 'main':
+    logger.info('Application starting', extra={
+        'host': HOST,
+        'port': PORT,
+        'debug': DEBUG
+    })
     app.run(host=HOST, port=PORT, debug=DEBUG)
